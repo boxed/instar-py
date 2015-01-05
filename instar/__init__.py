@@ -21,9 +21,9 @@ def get_in(structure, path):
 def dissoc_in(structure, path):
     assert path
     if len(path) == 1:
-        return structure.remove(path[0])
+        return structure.discard(path[0])
     sub_structure = get_in(structure, path[:-1])
-    return structure.set_in(path[:-1], sub_structure.remove(path[-1]))
+    return structure.set_in(path[:-1], sub_structure.discard(path[-1]))
 
 
 def expand_path(structure, already_evaluated_path, rest_path):
