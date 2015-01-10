@@ -7,7 +7,7 @@ Trivial examples:
 
 ```python
 from instar import transform, inc, dissoc
-from pyrsistent import m, freeze
+from pyrsistent import freeze
 
 m = freeze({'foo': {'bar': {'baz': 1}}})
 e = freeze({})

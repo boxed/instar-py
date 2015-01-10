@@ -1,4 +1,4 @@
-from instar import transform, inc, dissoc, expand_path, get_in
+from instar import transform, inc, dissoc, expand_path, get_in, transform2, discard, rex, ny
 from pyrsistent import freeze, thaw
 
 
@@ -45,3 +45,34 @@ def test_callable():
     m = freeze({'foo': {'bar': {'baz': 1}}})
     assert transform(m, ['foo', lambda x: x.startswith('b'), 'baz'], inc) == {'foo': {'bar': {'baz': 2}}}
 
+
+def test_transform2_simple_callable_command():
+    m2 = freeze({'foo': {'bar': {'baz': 1}}})
+    assert transform2(m2, ['foo', 'bar', 'baz'], inc) == {'foo': {'bar': {'baz': 2}}}
+
+
+def test_transform2_callable_matcher():
+    m = freeze({'foo': {'bar': {'baz': 1}, 'qux': {'baz': 1}}})
+    assert transform2(m, ['foo', lambda x: x.startswith('b'), 'baz'], inc) == {'foo': {'bar': {'baz': 2}, 'qux': {'baz': 1}}}
+
+
+def test_transform2_remove():
+    m = freeze({'foo': {'bar': {'baz': 1}}})
+    assert transform2(m, ['foo', 'bar', 'baz'], discard) == {'foo': {'bar': {}}}
+
+
+def test_transform2_callable_no_match():
+    m = freeze({'foo': {'bar': {'baz': 1}}})
+    assert transform2(m, ['foo', lambda x: x.startswith('c'), 'baz'], inc) == m
+
+
+def test_transform2_rex():
+    m = freeze({'foo': {'bar': {'baz': 1},
+                        'bof': {'baz': 1}}})
+    assert transform2(m, ['foo', rex('^bo.*'), 'baz'], inc) == {'foo': {'bar': {'baz': 1},
+                                                                        'bof': {'baz': 2}}}
+
+
+def test_transform2_ny():
+    m = freeze({'foo': 1, 'bar': 2})
+    assert transform2(m, [ny], 5) == {'foo': 5, 'bar': 5}

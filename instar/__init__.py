@@ -50,3 +50,54 @@ def transform(structure, *transformations):
             else:
                 r = r.set_in(path, command)
     return r
+
+
+def _discard(evolver, key):
+    try:
+        del evolver[key]
+    except KeyError:
+        pass
+
+discard = _discard
+
+import re
+
+
+def rex(expr):
+    r = re.compile(expr)
+    return lambda key: r.match(key)
+
+ny = rex(".*")
+
+
+# TODO: Support for vectors in addition to mappings
+def transform2(structure, *transformations):
+    r = structure
+    for path, command in chunks(transformations, 2):
+        r = do_to_path(r, path, command)
+    return r
+
+
+def do_to_path(structure, path, command):
+    if not path:
+        return command(structure) if callable(command) else command
+
+    kvs = get_keys_and_values(structure, path[0])
+    return update_structure(structure, kvs, path[1:], command)
+
+
+def get_keys_and_values(structure, key_spec):
+    if callable(key_spec):
+        return [(k, v) for k, v in structure.items() if key_spec(k)]
+
+    return [(key_spec, structure[key_spec])]
+
+
+def update_structure(structure, kvs, path, command):
+    e = structure.evolver()
+    for k, v in kvs:
+        if not path and command is discard:
+            discard(e, k)
+        else:
+            e[k] = do_to_path(v, path, command)
+    return e.pmap()
