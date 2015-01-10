@@ -76,3 +76,8 @@ def test_transform2_rex():
 def test_transform2_ny():
     m = freeze({'foo': 1, 'bar': 2})
     assert transform2(m, [ny], 5) == {'foo': 5, 'bar': 5}
+
+
+def test_transform2_new_elements_created_when_missing():
+    m = freeze({})
+    assert transform2(m, ['foo', 'bar', 'baz'], 7) == {'foo': {'bar': {'baz': 7}}}

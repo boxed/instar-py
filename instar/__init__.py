@@ -61,7 +61,7 @@ def _discard(evolver, key):
 discard = _discard
 
 import re
-
+from pyrsistent import pmap
 
 def rex(expr):
     r = re.compile(expr)
@@ -90,7 +90,7 @@ def get_keys_and_values(structure, key_spec):
     if callable(key_spec):
         return [(k, v) for k, v in structure.items() if key_spec(k)]
 
-    return [(key_spec, structure[key_spec])]
+    return [(key_spec, structure.get(key_spec, pmap()))]
 
 
 def update_structure(structure, kvs, path, command):
