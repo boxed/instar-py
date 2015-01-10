@@ -63,11 +63,12 @@ discard = _discard
 import re
 from pyrsistent import pmap
 
+
 def rex(expr):
     r = re.compile(expr)
-    return lambda key: r.match(key)
+    return lambda key: isinstance(key, basestring) and r.match(key)
 
-ny = rex(".*")
+ny = lambda _: True
 
 
 # TODO: Support for vectors in addition to mappings

@@ -73,9 +73,14 @@ def test_transform2_rex():
                                                                         'bof': {'baz': 2}}}
 
 
-def test_transform2_ny():
-    m = freeze({'foo': 1, 'bar': 2})
-    assert transform2(m, [ny], 5) == {'foo': 5, 'bar': 5}
+def test_rex_with_non_string_key():
+    m = freeze({'foo': 1, 5: 2})
+    assert transform2(m, [rex(".*")], 5) == {'foo': 5, 5: 2}
+
+
+def test_transform2_ny_matches_any_key():
+    m = freeze({'foo': 1, 5: 2})
+    assert transform2(m, [ny], 5) == {'foo': 5, 5: 5}
 
 
 def test_transform2_new_elements_created_when_missing():
