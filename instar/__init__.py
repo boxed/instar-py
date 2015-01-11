@@ -1,3 +1,5 @@
+from collections import Mapping
+
 inc = lambda x: x + 1
 dec = lambda x: x - 1
 dissoc = object()  # marker object
@@ -71,7 +73,6 @@ def rex(expr):
 ny = lambda _: True
 
 
-# TODO: Support for vectors in addition to mappings
 def transform2(structure, *transformations):
     r = structure
     for path, command in chunks(transformations, 2):
@@ -87,11 +88,25 @@ def do_to_path(structure, path, command):
     return update_structure(structure, kvs, path[1:], command)
 
 
+def items(structure):
+    try:
+        return structure.items()
+    except AttributeError:
+        return list(enumerate(structure))
+
+
+def get(structure, key, default):
+    try:
+        return structure[key]
+    except (IndexError, KeyError):
+        return default
+
+
 def get_keys_and_values(structure, key_spec):
     if callable(key_spec):
-        return [(k, v) for k, v in structure.items() if key_spec(k)]
+        return [(k, v) for k, v in items(structure) if key_spec(k)]
 
-    return [(key_spec, structure.get(key_spec, pmap()))]
+    return [(key_spec, get(structure, key_spec, pmap()))]
 
 
 def update_structure(structure, kvs, path, command):
@@ -101,4 +116,4 @@ def update_structure(structure, kvs, path, command):
             discard(e, k)
         else:
             e[k] = do_to_path(v, path, command)
-    return e.pmap()
+    return e.persistent()

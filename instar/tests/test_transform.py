@@ -46,12 +46,12 @@ def test_callable():
     assert transform(m, ['foo', lambda x: x.startswith('b'), 'baz'], inc) == {'foo': {'bar': {'baz': 2}}}
 
 
-def test_transform2_simple_callable_command():
+def test_transform2_callable_command():
     m2 = freeze({'foo': {'bar': {'baz': 1}}})
     assert transform2(m2, ['foo', 'bar', 'baz'], inc) == {'foo': {'bar': {'baz': 2}}}
 
 
-def test_transform2_callable_matcher():
+def test_transform2_predicate():
     m = freeze({'foo': {'bar': {'baz': 1}, 'qux': {'baz': 1}}})
     assert transform2(m, ['foo', lambda x: x.startswith('b'), 'baz'], inc) == {'foo': {'bar': {'baz': 2}, 'qux': {'baz': 1}}}
 
@@ -61,12 +61,12 @@ def test_transform2_remove():
     assert transform2(m, ['foo', 'bar', 'baz'], discard) == {'foo': {'bar': {}}}
 
 
-def test_transform2_callable_no_match():
+def test_transform2_predicate_no_match():
     m = freeze({'foo': {'bar': {'baz': 1}}})
     assert transform2(m, ['foo', lambda x: x.startswith('c'), 'baz'], inc) == m
 
 
-def test_transform2_rex():
+def test_transform2_rex_redicate():
     m = freeze({'foo': {'bar': {'baz': 1},
                         'bof': {'baz': 1}}})
     assert transform2(m, ['foo', rex('^bo.*'), 'baz'], inc) == {'foo': {'bar': {'baz': 1},
@@ -78,7 +78,7 @@ def test_rex_with_non_string_key():
     assert transform2(m, [rex(".*")], 5) == {'foo': 5, 5: 2}
 
 
-def test_transform2_ny_matches_any_key():
+def test_transform2_ny_predicated_matches_any_key():
     m = freeze({'foo': 1, 5: 2})
     assert transform2(m, [ny], 5) == {'foo': 5, 5: 5}
 
@@ -86,3 +86,18 @@ def test_transform2_ny_matches_any_key():
 def test_transform2_new_elements_created_when_missing():
     m = freeze({})
     assert transform2(m, ['foo', 'bar', 'baz'], 7) == {'foo': {'bar': {'baz': 7}}}
+
+
+def test_transform2_mixed_vector_and_map():
+    m = freeze({'foo': [1, 2, 3]})
+    assert transform2(m, ['foo', 1], 5) == freeze({'foo': [1, 5, 3]})
+
+
+def test_transform2_vector_predicate_callable_command():
+    v = freeze([1, 2, 3, 4, 5])
+    assert transform2(v, [lambda i: 0 < i < 4], inc) == freeze(freeze([1, 3, 4, 5, 5]))
+
+
+def test_transform2_vector_insert_map_one_step_beyond_end():
+    v = freeze([1, 2])
+    assert transform2(v, [2, 'foo'], 3) == freeze([1, 2, {'foo': 3}])
